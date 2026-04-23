@@ -1,0 +1,39 @@
+---
+export interface Props {
+  title: string;
+  href: string;
+  cover?: string | null;
+  status?: 'active' | 'wip' | 'planned';
+}
+
+const { title, href, cover, status = 'active' } = Astro.props;
+
+const statusLabel = status === 'wip' ? ' (WIP)' : status === 'planned' ? ' (Planned)' : '';
+---
+
+<a
+  href={href}
+  data-project-card
+  data-title={title}
+  class="group block bg-card-bg hover:bg-card-bg-hover rounded-lg shadow-card hover:shadow-card-hover transition-all overflow-hidden border border-border-subtle"
+>
+  <div class="px-5 pt-4 pb-3">
+    <h3 class="text-[15px] font-semibold text-text-primary leading-tight">
+      {title}{statusLabel}
+    </h3>
+  </div>
+  <div class="aspect-[16/10] bg-black relative overflow-hidden">
+    {cover ? (
+      <img
+        src={cover}
+        alt={title}
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+    ) : (
+      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-900 to-black">
+        <span class="text-neutral-700 text-[10px] tracking-[0.2em] uppercase">No image yet</span>
+      </div>
+    )}
+  </div>
+</a>

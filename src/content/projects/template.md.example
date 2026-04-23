@@ -1,0 +1,19 @@
+---
+# Copy this file, rename it to "your-project-slug.md" (lowercase, hyphens, no spaces)
+# Fill in the fields below and write the body in the space after the second "---".
+
+title: "Project Title Here"           # required
+tab: "in-camera-vfx"                  # required: "in-camera-vfx" | "performance-capture"
+category: "Media System"              # required: free text, groups projects in the tab
+order: 1                              # optional: lower number = shown first within the category
+status: "active"                      # optional: "active" | "wip" | "planned"
+cover: "/images/my-project.jpg"       # optional: path inside /public  OR a full https:// URL
+youtubeId: "dQw4w9WgXcQ"              # optional: YouTube video ID (the part after v= in the URL)
+---
+
+- First bullet describing the project
+- Second bullet
+- Third bullet
+
+You can also write plain paragraphs here. Markdown works:
+**bold**, *italic*, [links](https://example.com), etc.
