@@ -1,6 +1,6 @@
-# NABA — XR Studio Roadmap
+# NABA — Virtual Studio
 
-Sito di presentazione del dipartimento R&D di NABA (XR Studio) — replica statica del portale Productboard originale, costruita con [Astro](https://astro.build) e ospitata su GitHub Pages.
+Sito di presentazione del dipartimento R&D di NABA — Virtual Studio — replica statica del portale Productboard originale, costruita con [Astro](https://astro.build) e ospitata su GitHub Pages.
 
 Zero servizi esterni, zero costi, zero manutenzione. Per aggiungere o modificare contenuti basta modificare file Markdown nel repository.
 

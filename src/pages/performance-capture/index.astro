@@ -22,7 +22,7 @@ for (const [, list] of byCategory) {
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="Performance Capture · NABA XR Studio" activeTab="performance-capture">
+<BaseLayout title="Performance Capture · NABA - Virtual Studio" activeTab="performance-capture">
   {[...byCategory.keys()].map((category) => (
     <CategoryGroup title={category}>
       {byCategory.get(category)!.map((project) => (
