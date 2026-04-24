@@ -1,21 +1,21 @@
 ---
 export interface Props {
   title: string;
-  href: string;
+  slug: string;
   cover?: string | null;
   status?: 'active' | 'wip' | 'planned';
 }
 
-const { title, href, cover, status = 'active' } = Astro.props;
+const { title, slug, cover, status = 'active' } = Astro.props;
 
 const statusLabel = status === 'wip' ? ' (WIP)' : status === 'planned' ? ' (Planned)' : '';
 ---
 
-<a
-  href={href}
+<button
+  type="button"
   data-project-card
-  data-title={title}
-  class="group block bg-card-bg hover:bg-card-bg-hover rounded-lg shadow-card hover:shadow-card-hover transition-all overflow-hidden border border-border-subtle"
+  data-slug={slug}
+  class="group block text-left w-full bg-card-bg hover:bg-card-bg-hover rounded-lg shadow-card hover:shadow-card-hover transition-all overflow-hidden border border-border-subtle focus:outline-none focus:ring-1 focus:ring-white/30"
 >
   <div class="px-5 pt-4 pb-3">
     <h3 class="text-[15px] font-semibold text-text-primary leading-tight">
@@ -36,4 +36,4 @@ const statusLabel = status === 'wip' ? ' (WIP)' : status === 'planned' ? ' (Plan
       </div>
     )}
   </div>
-</a>
+</button>

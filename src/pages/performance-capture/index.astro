@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CategoryGroup from '../../components/CategoryGroup.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import ProjectModal from '../../components/ProjectModal.astro';
 import { resolveCoverImage } from '../../utils/cover';
 
 const allProjects = await getCollection('projects');
@@ -19,7 +20,6 @@ for (const [, list] of byCategory) {
 }
 
 const base = import.meta.env.BASE_URL;
-const url = (path: string) => `${base}${path}`.replace(/\/+/g, '/');
 ---
 
 <BaseLayout title="Performance Capture · NABA XR Studio" activeTab="performance-capture">
@@ -28,7 +28,7 @@ const url = (path: string) => `${base}${path}`.replace(/\/+/g, '/');
       {byCategory.get(category)!.map((project) => (
         <ProjectCard
           title={project.data.title}
-          href={url(`/projects/${project.slug}/`)}
+          slug={project.slug}
           cover={resolveCoverImage(project.data.cover ?? project.slug, base)}
           status={project.data.status}
         />
@@ -42,4 +42,6 @@ const url = (path: string) => `${base}${path}`.replace(/\/+/g, '/');
       <p class="text-text-muted text-xs mt-2">Add them by creating files in <code class="px-1.5 py-0.5 bg-card-bg border border-border-subtle rounded text-text-secondary">src/content/projects/</code> with <code class="px-1.5 py-0.5 bg-card-bg border border-border-subtle rounded text-text-secondary">tab: "performance-capture"</code>.</p>
     </div>
   )}
+
+  <ProjectModal projects={projects} />
 </BaseLayout>
