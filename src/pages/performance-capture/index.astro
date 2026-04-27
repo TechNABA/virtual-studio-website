@@ -15,6 +15,13 @@ for (const p of projects) {
   if (!byCategory.has(cat)) byCategory.set(cat, []);
   byCategory.get(cat)!.push(p);
 }
+
+const categoryOrder = ['Body Tracking', 'Face Tracking', 'Media System', 'Previz', 'Pipeline'];
+const sortedCategories = [
+  ...categoryOrder.filter((c) => byCategory.has(c)),
+  ...[...byCategory.keys()].filter((c) => !categoryOrder.includes(c)),
+];
+
 for (const [, list] of byCategory) {
   list.sort((a, b) => a.data.order - b.data.order);
 }
@@ -23,7 +30,7 @@ const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="Performance Capture · NABA - Virtual Studio" activeTab="performance-capture">
-  {[...byCategory.keys()].map((category) => (
+  {sortedCategories.map((category) => (
     <CategoryGroup title={category}>
       {byCategory.get(category)!.map((project) => (
         <ProjectCard
