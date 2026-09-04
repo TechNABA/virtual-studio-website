@@ -1,0 +1,18 @@
+---
+export interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<section data-category-group class="mb-14">
+  <div class="relative flex items-center justify-center mb-6">
+    <div class="absolute inset-x-0 top-1/2 h-px bg-border-subtle"></div>
+    <h2 class="relative bg-page-bg px-6 text-[12px] font-semibold text-text-secondary tracking-[0.15em] uppercase">
+      {title}
+    </h2>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,208 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { resolveCoverImage } from '../utils/cover';
+
+export interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { projects } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+
+// Build a compact JSON payload with all the data the modal needs.
+// Bodies are rendered to HTML here at build time, so the client just injects them.
+const payload = await Promise.all(
+  projects.map(async (p) => {
+    const { Content } = await p.render();
+    // Render the Markdown content by converting it to a string via Astro's compiler.
+    // For simplicity we pass the raw body and let the browser render it through a template.
+    const bodyHtml = p.body; // raw markdown; we'll convert on the client
+    return {
+      slug: p.slug,
+      title: p.data.title,
+      status: p.data.status,
+      cover: resolveCoverImage(p.data.cover ?? p.slug, base),
+      youtubeId: p.data.youtubeId ?? null,
+      body: p.body, // raw markdown
+    };
+  })
+);
+
+const dataJson = JSON.stringify(payload);
+---
+
+<!-- Modal root: hidden by default, shown when a card is clicked -->
+<div
+  id="project-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+  style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="project-modal-title"
+>
+  <div
+    id="project-modal-content"
+    class="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-card-bg rounded-lg shadow-2xl border border-border-subtle"
+  >
+    <!-- Close button -->
+    <button
+      type="button"
+      id="project-modal-close"
+      aria-label="Close"
+      class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition border border-white/10 backdrop-blur-sm"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Cover + status badge -->
+    <div id="project-modal-cover" class="aspect-[16/9] bg-black relative overflow-hidden"></div>
+
+    <!-- Body -->
+    <div class="px-10 py-8">
+      <h1 id="project-modal-title" class="text-2xl font-bold text-text-primary mb-6"></h1>
+      <div
+        id="project-modal-body"
+        class="prose prose-sm prose-invert max-w-none prose-li:my-1 prose-li:marker:text-text-muted prose-p:text-text-primary prose-strong:text-text-primary prose-strong:font-semibold"
+      ></div>
+      <div id="project-modal-video" class="mt-6"></div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ dataJson }}>
+  const projects = JSON.parse(dataJson);
+  const modal = document.getElementById('project-modal');
+  const modalContent = document.getElementById('project-modal-content');
+  const closeBtn = document.getElementById('project-modal-close');
+  const titleEl = document.getElementById('project-modal-title');
+  const bodyEl = document.getElementById('project-modal-body');
+  const coverEl = document.getElementById('project-modal-cover');
+  const videoEl = document.getElementById('project-modal-video');
+
+  // ---- Minimal Markdown → HTML converter (covers what our project files use) ----
+  // Supports: **bold**, *italic*, paragraphs, bullet lists, [links](url)
+  // NOT a full Markdown parser — just enough for our content.
+  function mdToHtml(md) {
+    if (!md) return '';
+    const lines = md.split(/\r?\n/);
+    const out = [];
+    let inList = false;
+    let paragraphBuffer = [];
+
+    const flushParagraph = () => {
+      if (paragraphBuffer.length) {
+        out.push('<p>' + inline(paragraphBuffer.join(' ')) + '</p>');
+        paragraphBuffer = [];
+      }
+    };
+
+    const inline = (text) => {
+      return text
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    };
+
+    for (const raw of lines) {
+      const line = raw.trimEnd();
+      if (/^\s*-\s+/.test(line)) {
+        flushParagraph();
+        if (!inList) { out.push('<ul>'); inList = true; }
+        out.push('<li>' + inline(line.replace(/^\s*-\s+/, '')) + '</li>');
+      } else if (line.trim() === '') {
+        if (inList) { out.push('</ul>'); inList = false; }
+        flushParagraph();
+      } else {
+        if (inList) { out.push('</ul>'); inList = false; }
+        // Bold-only lines (section headers like **WORKSTATION 01 – ...**) → render as h4
+        const boldOnly = line.match(/^\*\*([^*]+)\*\*$/);
+        if (boldOnly) {
+          flushParagraph();
+          out.push('<h4 class="font-semibold text-[13px] tracking-wide text-text-primary mt-5 mb-2">' + inline(boldOnly[1]) + '</h4>');
+        } else {
+          paragraphBuffer.push(line);
+        }
+      }
+    }
+    if (inList) out.push('</ul>');
+    flushParagraph();
+    return out.join('\n');
+  }
+
+  function statusLabel(s) {
+    return s === 'wip' ? 'WIP' : s === 'planned' ? 'Planned' : null;
+  }
+
+  function openModal(slug) {
+    const p = projects.find((x) => x.slug === slug);
+    if (!p) return;
+
+    titleEl.textContent = p.title;
+    bodyEl.innerHTML = mdToHtml(p.body);
+
+    // Cover
+    const label = statusLabel(p.status);
+    coverEl.innerHTML = p.cover
+      ? `<img src="${p.cover}" alt="${p.title}" class="w-full h-full object-cover" />`
+      : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-900 to-black"><span class="text-neutral-700 text-xs tracking-[0.2em] uppercase">No cover image yet</span></div>`;
+    if (label) {
+      coverEl.insertAdjacentHTML(
+        'beforeend',
+        `<span class="absolute top-4 left-4 px-3 py-1 text-[11px] font-semibold tracking-wider rounded border border-white/10 text-white" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);">${label}</span>`
+      );
+    }
+
+    // Optional YouTube embed
+    if (p.youtubeId) {
+      videoEl.innerHTML = `
+        <div class="relative w-full rounded-md overflow-hidden bg-black border border-border-subtle" style="aspect-ratio: 16 / 9;">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/${p.youtubeId}"
+            title="${p.title}"
+            class="absolute inset-0 w-full h-full"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+      `;
+    } else {
+      videoEl.innerHTML = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    // Reset scroll on reopen
+    modalContent.scrollTop = 0;
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  // Bind card clicks
+  document.querySelectorAll('[data-project-card]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const slug = card.getAttribute('data-slug');
+      if (slug) openModal(slug);
+    });
+  });
+
+  // Close handlers
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    // Click on backdrop (not inside the content box)
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+  });
+</script>
