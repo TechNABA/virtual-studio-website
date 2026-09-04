@@ -4,7 +4,7 @@ const projects = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    tab: z.enum(['in-camera-vfx', 'performance-capture']),
+    tab: z.enum(['in-camera-vfx', 'performance-capture', 'video']),
     category: z.string(),
     order: z.number().default(999),
     status: z.enum(['active', 'wip', 'planned']).default('active'),

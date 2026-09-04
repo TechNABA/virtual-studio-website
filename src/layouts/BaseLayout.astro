@@ -1,7 +1,7 @@
 ---
 export interface Props {
   title?: string;
-  activeTab?: 'in-camera-vfx' | 'performance-capture' | null;
+  activeTab?: 'in-camera-vfx' | 'performance-capture' | 'video' | null;
 }
 
 const { title = 'NABA - Virtual Studio', activeTab = null } = Astro.props;
@@ -12,6 +12,7 @@ const url = (path: string) => `${base}${path}`.replace(/\/+/g, '/');
 const tabs = [
   { id: 'in-camera-vfx', label: 'IN-CAMERA VFX', href: url('/') },
   { id: 'performance-capture', label: 'PERFORMANCE CAPTURE', href: url('/performance-capture/') },
+  { id: 'video', label: 'VIDEO', href: url('/video/') },
 ];
 ---
 
