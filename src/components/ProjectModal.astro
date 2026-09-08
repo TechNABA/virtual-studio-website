@@ -11,23 +11,18 @@ const { projects } = Astro.props;
 const base = import.meta.env.BASE_URL;
 
 // Build a compact JSON payload with all the data the modal needs.
-// Bodies are rendered to HTML here at build time, so the client just injects them.
-const payload = await Promise.all(
-  projects.map(async (p) => {
-    const { Content } = await p.render();
-    // Render the Markdown content by converting it to a string via Astro's compiler.
-    // For simplicity we pass the raw body and let the browser render it through a template.
-    const bodyHtml = p.body; // raw markdown; we'll convert on the client
-    return {
-      slug: p.slug,
-      title: p.data.title,
-      status: p.data.status,
-      cover: resolveCoverImage(p.data.cover ?? p.slug, base),
-      youtubeId: p.data.youtubeId ?? null,
-      body: p.body, // raw markdown
-    };
-  })
-);
+// `body` is the RAW Markdown, not HTML: it is converted in the browser when a
+// card is opened, by the mdToHtml() function further down. That converter is
+// deliberately minimal — read the comment above it before writing content that
+// needs Markdown syntax beyond bullet lists, bold, italic and links.
+const payload = projects.map((p) => ({
+  slug: p.slug,
+  title: p.data.title,
+  status: p.data.status,
+  cover: resolveCoverImage(p.data.cover ?? p.slug, base),
+  youtubeId: p.data.youtubeId ?? null,
+  body: p.body,
+}));
 
 const dataJson = JSON.stringify(payload);
 ---

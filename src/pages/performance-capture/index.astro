@@ -5,34 +5,23 @@ import CategoryGroup from '../../components/CategoryGroup.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import ProjectModal from '../../components/ProjectModal.astro';
 import { resolveCoverImage } from '../../utils/cover';
+import { groupByCategory } from '../../utils/projects';
 
 const allProjects = await getCollection('projects');
 const projects = allProjects.filter((p) => p.data.tab === 'performance-capture');
 
-const byCategory = new Map<string, typeof projects>();
-for (const p of projects) {
-  const cat = p.data.category;
-  if (!byCategory.has(cat)) byCategory.set(cat, []);
-  byCategory.get(cat)!.push(p);
-}
-
+// Category order for this tab. Categories not listed here still work, they just
+// appear after the listed ones.
 const categoryOrder = ['Body Tracking', 'Face Tracking', 'Media System', 'Previz', 'Pipeline'];
-const sortedCategories = [
-  ...categoryOrder.filter((c) => byCategory.has(c)),
-  ...[...byCategory.keys()].filter((c) => !categoryOrder.includes(c)),
-];
-
-for (const [, list] of byCategory) {
-  list.sort((a, b) => a.data.order - b.data.order);
-}
+const groups = groupByCategory(projects, categoryOrder);
 
 const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="Performance Capture · NABA - Virtual Studio" activeTab="performance-capture">
-  {sortedCategories.map((category) => (
-    <CategoryGroup title={category}>
-      {byCategory.get(category)!.map((project) => (
+  {groups.map((group) => (
+    <CategoryGroup title={group.category}>
+      {group.items.map((project) => (
         <ProjectCard
           title={project.data.title}
           slug={project.slug}
