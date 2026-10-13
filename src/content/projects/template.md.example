@@ -3,7 +3,7 @@
 # Fill in the fields below and write the body in the space after the second "---".
 
 title: "Project Title Here"           # required
-tab: "in-camera-vfx"                  # required: "in-camera-vfx" | "performance-capture"
+tab: "in-camera-vfx"                  # required: "in-camera-vfx" | "performance-capture" | "video"
 category: "Media System"              # required: free text, groups projects in the tab
 order: 1                              # optional: lower number = shown first within the category
 status: "active"                      # optional: "active" | "wip" | "planned"

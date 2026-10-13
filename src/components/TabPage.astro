@@ -1,0 +1,49 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CategoryGroup from './CategoryGroup.astro';
+import ProjectCard from './ProjectCard.astro';
+import ProjectModal from './ProjectModal.astro';
+import { resolveCoverImage } from '../utils/cover';
+import { groupByCategory } from '../utils/projects';
+
+export interface Props {
+  tab: CollectionEntry<'projects'>['data']['tab'];
+  title: string; // tab name in the browser title, e.g. "Video"
+  emptyLabel: string; // what the empty state says is missing, e.g. "videos"
+  // Category order for this tab. Categories not listed here still work, they
+  // just appear after the listed ones, in the order the projects are collected.
+  categoryOrder?: string[];
+}
+
+const { tab, title, emptyLabel, categoryOrder = [] } = Astro.props;
+
+const projects = await getCollection('projects', (p) => p.data.tab === tab);
+const groups = groupByCategory(projects, categoryOrder);
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={`${title} · NABA - Virtual Studio`} activeTab={tab}>
+  {groups.map((group) => (
+    <CategoryGroup title={group.category}>
+      {group.items.map((project) => (
+        <ProjectCard
+          title={project.data.title}
+          slug={project.slug}
+          cover={resolveCoverImage(project.data.cover ?? project.slug, base)}
+          status={project.data.status}
+        />
+      ))}
+    </CategoryGroup>
+  ))}
+
+  {projects.length === 0 && (
+    <div class="text-center py-24">
+      <p class="text-text-secondary text-sm">No {emptyLabel} yet.</p>
+      <p class="text-text-muted text-xs mt-2">Add them by creating files in <code class="px-1.5 py-0.5 bg-card-bg border border-border-subtle rounded text-text-secondary">src/content/projects/</code> with <code class="px-1.5 py-0.5 bg-card-bg border border-border-subtle rounded text-text-secondary">tab: "{tab}"</code><slot name="empty-hint" />.</p>
+    </div>
+  )}
+
+  <ProjectModal projects={projects} />
+</BaseLayout>
