@@ -23,8 +23,9 @@ jobs:
       - name: Install, build, and upload your site
         uses: withastro/action@v6
         with:
-          # Required: this repo has no lockfile, and without this input the
-          # action stops with "No lockfile found". Do not remove it.
+          # Added when the repo had no lockfile: without this input the action
+          # stopped with "No lockfile found". package-lock.json now exists, so
+          # check whether this is still needed before removing it.
           package-manager: npm@latest
 
   deploy:

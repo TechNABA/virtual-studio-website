@@ -1,7 +1,12 @@
 ---
+import type { CollectionEntry } from 'astro:content';
+
+// Tab ids come from the `tab` enum in src/content/config.ts.
+type Tab = CollectionEntry<'projects'>['data']['tab'];
+
 export interface Props {
   title?: string;
-  activeTab?: 'in-camera-vfx' | 'performance-capture' | 'video' | null;
+  activeTab?: Tab | null;
 }
 
 const { title = 'NABA - Virtual Studio', activeTab = null } = Astro.props;
@@ -9,7 +14,7 @@ const { title = 'NABA - Virtual Studio', activeTab = null } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const url = (path: string) => `${base}${path}`.replace(/\/+/g, '/');
 
-const tabs = [
+const tabs: { id: Tab; label: string; href: string }[] = [
   { id: 'in-camera-vfx', label: 'IN-CAMERA VFX', href: url('/') },
   { id: 'performance-capture', label: 'PERFORMANCE CAPTURE', href: url('/performance-capture/') },
   { id: 'video', label: 'VIDEO', href: url('/video/') },
